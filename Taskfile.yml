@@ -152,19 +152,19 @@ tasks:
   clean:
     desc: Clean build artifacts and node_modules
     cmds:
-      - rm -rf frontend/node_modules
-      - rm -rf frontend/dist
-      - rm -rf backend/__pycache__
-      - rm -rf backend/.mypy_cache
-      - rm -rf backend/.pytest_cache
-      - rm -rf backend/.coverage
-      - rm -rf backend/htmlcov
+      - powershell -Command "if (Test-Path 'frontend\node_modules') { Remove-Item 'frontend\node_modules' -Recurse -Force }"
+      - powershell -Command "if (Test-Path 'frontend\dist') { Remove-Item 'frontend\dist' -Recurse -Force }"
+      - powershell -Command "if (Test-Path 'backend\__pycache__') { Remove-Item 'backend\__pycache__' -Recurse -Force }"
+      - powershell -Command "if (Test-Path 'backend\.mypy_cache') { Remove-Item 'backend\.mypy_cache' -Recurse -Force }"
+      - powershell -Command "if (Test-Path 'backend\.pytest_cache') { Remove-Item 'backend\.pytest_cache' -Recurse -Force }"
+      - powershell -Command "if (Test-Path 'backend\.coverage') { Remove-Item 'backend\.coverage' -Force }"
+      - powershell -Command "if (Test-Path 'backend\htmlcov') { Remove-Item 'backend\htmlcov' -Recurse -Force }"
 
   clean:all:
     desc: Clean everything including uv virtual environment
     deps: [clean]
     cmds:
-      - rm -rf backend/.venv
+      - powershell -Command "if (Test-Path 'backend\.venv') { Remove-Item 'backend\.venv' -Recurse -Force }"
 
   setup:
     desc: Complete project setup
@@ -173,6 +173,20 @@ tasks:
   setup:dev:
     desc: Setup development environment
     deps: [install, lint:fix, type-check, test]
+
+  setup:hooks:
+    desc: Setup Git hooks for the project
+    cmds:
+      - echo "Setting up Git hooks..."
+      - git config core.hooksPath .githooks
+      - echo "Git hooks configured to use .githooks directory"
+      - echo "Hooks will now prevent direct pushes to main/develop branches"
+      - echo "All changes must go through pull requests"
+      
+
+  setup:complete:
+    desc: Complete project setup including Git hooks
+    deps: [install, lint:fix, type-check, setup:hooks]
 
   # CI/CD tasks
   ci:frontend:

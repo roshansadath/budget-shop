@@ -18,16 +18,18 @@ A full-stack web application for budget management and shopping.
    cd budget-shop
    ```
 
-2. **Install frontend dependencies**
+2. **Setup the complete project (including Git hooks)**
    ```bash
-   cd frontend
-   npm install
+   task setup:complete
    ```
+OR WHAT
 
-3. **Install backend dependencies**
+3. **Or setup step by step:**
    ```bash
-   cd backend
-   uv sync
+   task install              # Install dependencies
+   task setup:hooks          # Setup Git hooks
+   task lint:fix             # Fix code formatting
+   task type-check           # Verify types
    ```
 
 ## 🏗️ Project Structure
@@ -62,7 +64,43 @@ budget-shop/
     ├── workflows/           # CI/CD pipelines
     ├── ISSUE_TEMPLATE/      # Issue templates
     └── pull_request_template.md
-```
+└── .githooks/               # Git hooks for branch protection
+    └── pre-push            # Prevents direct pushes to protected branches
+
+## 🌿 Branching Strategy
+
+### Protected Branches
+- `main` - Production-ready code (requires PR)
+- `develop` - Development integration branch (requires PR)
+
+### Development Workflow
+1. **Create feature branch** from `develop`:
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make changes and commit**:
+   ```bash
+   git add .
+   git commit -m "feat(frontend): add budget tracking component"
+   ```
+
+3. **Push to feature branch**:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+4. **Create pull request** to merge into `develop`
+
+5. **After review and approval**, merge via GitHub
+
+### ⚠️ Important Notes
+- **Direct pushes to `main` and `develop` are blocked by Git hooks**
+- All changes must go through pull requests
+- Ensure CI checks pass before merging
+- Use conventional commit messages (see Contributing section)
 
 ## 🚀 Development
 
@@ -95,6 +133,9 @@ uv run pytest                      # Run tests
 task dev            # Start both frontend and backend
 task dev:frontend   # Start only frontend
 task dev:backend    # Start only backend
+
+# Setup Git hooks (one-time setup)
+task setup:hooks    # Configure branch protection hooks
 
 # Using npm scripts
 npm run dev         # Start frontend
@@ -155,6 +196,20 @@ task docker:clean
 ```
 
 ## 🧪 Testing
+
+### Test Git Hooks
+
+To verify your hooks are working:
+
+```bash
+# Try to push to develop (should be blocked)
+git checkout develop
+git push origin develop
+
+# You should see an error message and the push should be blocked
+```
+
+### Frontend Testing
 
 ### Frontend Testing
 ```bash
@@ -241,8 +296,8 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 Run `task --list-all` to see all available tasks:
 
+- **Setup**: `setup:complete`, `setup:hooks`, `install`
 - **Development**: `dev`, `dev:frontend`, `dev:backend`
-- **Installation**: `install`, `setup`, `setup:dev`
 - **Quality**: `lint`, `format`, `type-check`
 - **Testing**: `test`, `test:cov`
 - **Build**: `build`
