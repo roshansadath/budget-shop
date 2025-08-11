@@ -1,0 +1,251 @@
+version: '3'
+
+tasks:
+  # Frontend tasks
+  frontend:install:
+    desc: Install frontend dependencies
+    dir: frontend
+    cmds:
+      - npm install
+
+  frontend:dev:
+    desc: Start frontend development server
+    dir: frontend
+    cmds:
+      - npm run dev
+
+  frontend:build:
+    desc: Build frontend for production
+    dir: frontend
+    cmds:
+      - npm run build
+
+  frontend:lint:
+    desc: Run frontend linting
+    dir: frontend
+    cmds:
+      - npm run lint
+
+  frontend:lint:fix:
+    desc: Fix frontend linting issues
+    dir: frontend
+    cmds:
+      - npm run lint:fix
+
+  frontend:type-check:
+    desc: Run TypeScript type checking
+    dir: frontend
+    cmds:
+      - npm run type-check
+
+  frontend:format:
+    desc: Format frontend code
+    dir: frontend
+    cmds:
+      - npm run format
+
+  frontend:format:check:
+    desc: Check frontend code formatting
+    dir: frontend
+    cmds:
+      - npm run format:check
+
+  frontend:preview:
+    desc: Preview frontend build
+    dir: frontend
+    cmds:
+      - npm run preview
+
+  # Backend tasks
+  backend:install:
+    desc: Install backend dependencies
+    dir: backend
+    cmds:
+      - python -m uv sync
+
+  backend:dev:
+    desc: Start backend development server
+    dir: backend
+    cmds:
+      - python -m uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+  backend:lint:
+    desc: Run backend linting
+    dir: backend
+    cmds:
+      - python -m uv run flake8 .
+
+  backend:format:
+    desc: Format backend code
+    dir: backend
+    cmds:
+      - python -m uv run black .
+
+  backend:type-check:
+    desc: Run backend type checking
+    dir: backend
+    cmds:
+      - python -m uv run mypy .
+
+  backend:test:
+    desc: Run backend tests
+    dir: backend
+    cmds:
+      - python -m uv run pytest
+
+  backend:test:cov:
+    desc: Run backend tests with coverage
+    dir: backend
+    cmds:
+      - python -m uv run pytest --cov=.
+
+  # Combined tasks
+  install:
+    desc: Install all dependencies
+    deps: [frontend:install, backend:install]
+
+  dev:
+    desc: Start both frontend and backend in development mode
+    deps: [frontend:dev, backend:dev]
+
+  dev:frontend:
+    desc: Start only frontend development server
+    deps: [frontend:dev]
+
+  dev:backend:
+    desc: Start only backend development server
+    deps: [backend:dev]
+
+  build:
+    desc: Build frontend for production
+    deps: [frontend:build]
+
+  lint:
+    desc: Run linting for both frontend and backend
+    deps: [frontend:lint, backend:lint]
+
+  lint:fix:
+    desc: Fix linting issues for both frontend and backend
+    deps: [frontend:lint:fix, backend:format]
+
+  type-check:
+    desc: Run type checking for both frontend and backend
+    deps: [frontend:type-check, backend:type-check]
+
+  format:
+    desc: Format code for both frontend and backend
+    deps: [frontend:format, backend:format]
+
+  format:check:
+    desc: Check code formatting for both frontend and backend
+    deps: [frontend:format:check, backend:format]
+
+  test:
+    desc: Run tests for both frontend and backend
+    deps: [backend:test]
+
+  test:cov:
+    desc: Run tests with coverage
+    deps: [backend:test:cov]
+
+  # Utility tasks
+  clean:
+    desc: Clean build artifacts and node_modules
+    cmds:
+      - rm -rf frontend/node_modules
+      - rm -rf frontend/dist
+      - rm -rf backend/__pycache__
+      - rm -rf backend/.mypy_cache
+      - rm -rf backend/.pytest_cache
+      - rm -rf backend/.coverage
+      - rm -rf backend/htmlcov
+
+  clean:all:
+    desc: Clean everything including uv virtual environment
+    deps: [clean]
+    cmds:
+      - rm -rf backend/.venv
+
+  setup:
+    desc: Complete project setup
+    deps: [install, lint:fix, type-check]
+
+  setup:dev:
+    desc: Setup development environment
+    deps: [install, lint:fix, type-check, test]
+
+  # CI/CD tasks
+  ci:frontend:
+    desc: Run frontend CI checks
+    deps: [frontend:lint, frontend:type-check, frontend:format:check]
+
+  ci:backend:
+    desc: Run backend CI checks
+    deps: [backend:lint, backend:format, backend:type-check]
+
+  ci:
+    desc: Run all CI checks
+    deps: [ci:frontend, ci:backend]
+
+  # Database tasks
+  db:migrate:
+    desc: Run database migrations
+    dir: backend
+    cmds:
+      - echo "Database migration task - implement based on your ORM"
+
+  db:seed:
+    desc: Seed database with initial data
+    dir: backend
+    cmds:
+      - echo "Database seeding task - implement based on your needs"
+
+  # Docker tasks
+  docker:build:
+    desc: Build production Docker images
+    cmds:
+      - docker-compose build
+
+  docker:build:dev:
+    desc: Build development Docker images
+    cmds:
+      - docker-compose -f docker-compose.dev.yml build
+
+  docker:up:
+    desc: Start production services with Docker
+    cmds:
+      - docker-compose up -d
+
+  docker:up:dev:
+    desc: Start development services with Docker
+    cmds:
+      - docker-compose -f docker-compose.dev.yml up -d
+
+  docker:down:
+    desc: Stop all Docker services
+    cmds:
+      - docker-compose down
+      - docker-compose -f docker-compose.dev.yml down
+
+  docker:logs:
+    desc: View Docker service logs
+    cmds:
+      - docker-compose logs -f
+
+  docker:logs:dev:
+    desc: View development Docker service logs
+    cmds:
+      - docker-compose -f docker-compose.dev.yml logs -f
+
+  docker:clean:
+    desc: Clean Docker images and containers
+    cmds:
+      - docker-compose down --rmi all --volumes --remove-orphans
+      - docker-compose -f docker-compose.dev.yml down --rmi all --volumes --remove-orphans
+      - docker system prune -f
+
+  # Help task
+  help:
+    desc: Show available tasks
+    cmds:
+      - task --list-all
